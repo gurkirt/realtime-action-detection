@@ -99,7 +99,7 @@ CUDA_VISIBLE_DEVICES=0 python3 test-ucf24.py --data_root=/home/user/ucf24/ --sav
 
 -Note
   * By default it will compute frame-level detections and store them as well as compute frame-mean-AP in models saved at 90k and 120k iteration.
-  * There is a log file file created for each iteration's frame-level evaluation.
+  * There is a log file created for each iteration's frame-level evaluation.
 
 ##### Build tubes
 You will need frame-level detections and you will need to navigate to `online-tubes`
@@ -114,12 +114,12 @@ Results are saved in `save_root/results.mat`. Additionally,`action-path` and `ac
 ##### frame-meanAP
 To compute frame-mAP you can use `frameAP.m` script. You will need to specify `data_root`, `data_root`.
 Use this script to produce results for your publication not the python one, both are almost identical,
-but thier ap computation from precision and recall is slightly different.
+but their ap computation from precision and recall is slightly different.
 
 ## Performance
 ##### UCF24 Test
-Table below is similiar to [table 1 in our paper](https://arxiv.org/pdf/1611.08563.pdf). It contains more info than
-that in paper, mostly about this implemenation.
+The table below is similar to [table 1 in our paper](https://arxiv.org/pdf/1611.08563.pdf). It contains more info than
+that in the paper, mostly about this implementation.
 <table style="width:100% th">
   <tr>
     <td>IoU Threshold = </td>
@@ -258,40 +258,37 @@ that in paper, mostly about this implemenation.
   </tr>
 </table>
 
-##### Disscussion:
+##### Discussion:
 `Effect of training iterations:`
-There is a effect of learing rate and number of itertaion
-the model is trained.
-If you train SSD on intial leanring rate for
+There is an effect due to the choice of learning rate and the number of iterations the model is trained.
+If you train the SSD network on initial learning rate for
 many iterations then it performs is better on
 lower IoU threshold, which is done in this case.
-In orignal work using caffe implementation of SSD,
-I trained SSD with 0.0005 learning rate for first 30K
-iteration and dropped then learning rate by factor of 5
-(divided by 5) and only trained for 45k itrations.
-In this implementation all the models are trained for 120K
-iterations, intial learninig rate is 0.0005 and learing is dropped by
-the fastor of 5 after 70K and 90K iterations.
+In original work using caffe implementation of SSD,
+I trained the SSD network  with 0.0005 learning rate for first 30K
+iterations and dropped then learning rate by the factor of 5
+(divided by 5) and further trained up to 45k iterations.
+In this implementation, all the models are trained for 120K
+iterations, the initial learning rate is set to 0.0005 and learning is dropped by the factor of 5 after 70K and 90K iterations.
 
 `Kalogeiton et al. [5] ` make use mean fusion, so I thought we could try in our pipeline which was very easy to incorporate.
 It is evident from above table that mean fusion performs better than other fusion techniques.
-Also, their method rely on multiple frames as input in addition to post-processing of
-bounding box coordinates at tubelet level.
+Also, their method relies on multiple frames as input in addition to post-processing of bounding box coordinates at tubelet level.
 
 ##### Real-time aspect:
 
-This implementation is mainly focused on producing the best number, it can be modified to tun fast.
+This implementation is mainly focused on producing the best numbers (mAP) in the simplest manner, it can be modified to run faster.
 There few aspect that would need changes:
- - NMS is performed once in python then again in matlab; one has to do that on GPU in python
- - Most of the time spent during tube generations is taken by disc operations; which can be elimnated completely.
+ - NMS is performed once in python then again in Matlab; one has to do that on GPU in python
+ - Most of the time spent during tube generations is taken by disc operations; which can be eliminated completely.
  - IoU computation during action path is done multiple time just to keep the code clean that can be handled more smartly
 
-Contact me if you want to implement real-time version.
-Proper real-time version would require converting matlab part into python.
-I presented the timing of indivual components in paper, which still holds.
+Contact me if you want to implement the real-time version.
+The Proper real-time version would require converting Matlab part into python.
+I presented the timing of individual components in the paper, which still holds true.
 
 ## Extras
-To use pre-trained model download the pretrained weights from the links given below and make changes in `test-ucf24.py` to accept the downloaded weights. 
+To use pre-trained model download the pre-trained weights from the links given below and make changes in `test-ucf24.py` to accept the downloaded weights. 
 
 ##### Download pre-trained networks
 - Currently, we provide the following PyTorch models: 
