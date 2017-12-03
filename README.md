@@ -70,17 +70,17 @@ CUDA_VISIBLE_DEVICES=0 python3 train-ucf24.py --data_root=/home/user/ucf24/ --sa
 --visdom=True --input_type=brox --stepvalues=70000,90000 --max_iter=120000
 ```
 
-Different paramneter in `train-ucf24.py` will result in different performance
+Different parameters in `train-ucf24.py` will result in different performance
 
 - Note:
   * Network occupies almost 9.2GB VRAM on a GPU, we used 1080Ti for training and normal training takes about 32-40 hrs 
-  * For instructions on Visdom usage/installation, see the <a href='#installation'>Installation</a> section. By default it is off.
+  * For instructions on Visdom usage/installation, see the <a href='#installation'>Installation</a> section. By default, it is off.
   * If you don't like to use visdom then you always keep track of train using logfile which is saved under save_root directory
   * During training checkpoint is saved every 10K iteration also log it's frame-level `frame-mean-ap` on a subset of 22k test images.
-  * We recommend to train for 120K iterations for all the input types.
+  * We recommend training for 120K iterations for all the input types.
 
 ## Building Tubes
-To generate the tubes and evaluate them, first, you will need frame-level detection then you can  navigate to 'online-tubes' to generate tubes using `I01onlineTubes` and `I02genFusedTubes`.
+To generate the tubes and evaluate them, first, you will need frame-level detection then you can navigate to 'online-tubes' to generate tubes using `I01onlineTubes` and `I02genFusedTubes`.
 
 ##### produce frame-level detection
 Once you have trained network then you can use `test-ucf24.py` to generate frame-level detections.
