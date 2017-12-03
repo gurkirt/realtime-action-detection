@@ -1,16 +1,16 @@
 # Real-time online Action Detection: ROAD
-An implementation of our work ([Online Real time Multiple Spatiotemporal Action Localisation and Prediction](https://arxiv.org/pdf/1611.08563.pdf) published in ICCV 2017.
+An implementation of our work ([Online Real-time Multiple Spatiotemporal Action Localisation and Prediction](https://arxiv.org/pdf/1611.08563.pdf) published in ICCV 2017.
 
-Originaly, we used [Caffe](https://github.com/weiliu89/caffe/tree/ssd) implmentation of [SSD-V2](https://arxiv.org/abs/1512.02325)
+Originally, we used [Caffe](https://github.com/weiliu89/caffe/tree/ssd) implementation of [SSD-V2](https://arxiv.org/abs/1512.02325)
 for publication. I have forked the version of [SSD-CAFFE](https://github.com/gurkirt/caffe/tree/ssd) which I used to generate results for paper, you try that if you want to use caffe. You can use that repo if like caffe other I would recommend using this version.
-This implementations still is bit off from original work. It works slightly, better on lower IoU and higher IoU and vice-versa.
-Tube generation part in original implementations as same as this. I found that this implemenation of SSD is slight worse @ IoU greater or equal to 0.5 in context of UCF24 dataset. 
+This implementation is bit off from original work. It works slightly, better on lower IoU and higher IoU and vice-versa.
+Tube generation part in original implementations as same as this. I found that this implementation of SSD is slight worse @ IoU greater or equal to 0.5 in context of the UCF24 dataset. 
 
 I decided to release the code with [PyTorch](http://pytorch.org/) implementation of SSD, 
-because, it would be easier to reuse than caffe version (where installation itself could be an big issue).
+because it would be easier to reuse than caffe version (where installation itself could be a big issue).
 We build on Pytorch [implementation](https://github.com/amdegroot/ssd.pytorch) of SSD by Max deGroot, Ellis Brown.
-We made few changes like (different lr for bias and weights during optimisation) and simplified some parts to 
-accommodate ucf24 dataset.  
+We made few changes like (different learning rate for bias and weights during optimization) and simplified some parts to 
+accommodate ucf24 dataset. 
 
 ### Table of Contents
 - <a href='#installation'>Installation</a>
@@ -27,13 +27,13 @@ accommodate ucf24 dataset.
 - Install [PyTorch](http://pytorch.org/) by selecting your environment on the website and running the appropriate command.
 - Please install cv2 as well. I recommend using anaconda 3.6 and it's opnecv package.
 - You will also need Matlab. If you have distributed computing license then it would be faster otherwise it should also be fine. 
-Just replace <code>parfor</code> with simple `for` in matlab scripts. I would be happy to accept a PR for python version of this part.
+Just replace <code>parfor</code> with simple `for` in Matlab scripts. I would be happy to accept a PR for python version of this part.
 - Clone this repository. 
   * Note: We currently only support Python 3+ on Linux system
-- We currently only support [UCF24](http://www.thumos.info/download.html) with [revised annotaions](https://github.com/gurkirt/corrected-UCF101-Annots) released with our paper, we will try to add [JHMDB21](http://jhmdb.is.tue.mpg.de/) as soon as possible, but can't promise, you can checkout our [BMVC2016 code](https://bitbucket.org/sahasuman/bmvc2016_code) to get started your experiments on JHMDB21.
-- To simulate the same training and evaluation setup we provide extracted `rgb` images from videos along with with optical flow images (both `brox flow` and `real-time flow`) computed for ucf24 dataset.
+- We currently only support [UCF24](http://www.thumos.info/download.html) with [revised annotaions](https://github.com/gurkirt/corrected-UCF101-Annots) released with our paper, we will try to add [JHMDB21](http://jhmdb.is.tue.mpg.de/) as soon as possible, but can't promise, you can check out our [BMVC2016 code](https://bitbucket.org/sahasuman/bmvc2016_code) to get started your experiments on JHMDB21.
+- To simulate the same training and evaluation setup we provide extracted `rgb` images from videos along with optical flow images (both `brox flow` and `real-time flow`) computed for the UCF24 dataset.
 You can download it from my [google drive link](https://drive.google.com/file/d/1o2l6nYhd-0DDXGP-IPReBP4y1ffVmGSE/view?usp=sharing)
-- We also support [Visdom](https://github.com/facebookresearch/visdom) for visualization of loss and frameAP on subset during training! 
+- We also support [Visdom](https://github.com/facebookresearch/visdom) for visualization of loss and frame-meanAP on subset during training.
   * To use Visdom in the browser: 
   ```Shell
   # First install Python server and client 
@@ -44,18 +44,18 @@ You can download it from my [google drive link](https://drive.google.com/file/d/
   * Then (during training) navigate to http://localhost:8097/ (see the Training section below for more details).
 
 ## Dataset
-To make things easy, we provide extracted `rgb` images from videos along with with optical flow images (both `brox flow` and `real-time flow`) computed for ucf24 dataset, 
+To make things easy, we provide extracted `rgb` images from videos along with optical flow images (both `brox flow` and `real-time flow`) computed for ucf24 dataset, 
 you can download it from my [google drive link](https://drive.google.com/file/d/1o2l6nYhd-0DDXGP-IPReBP4y1ffVmGSE/view?usp=sharing).
-It is almost 6Gb tar ball, download it and extract it wherever you going to store your experiments. 
+It is almost 6Gb tarball, download it and extract it wherever you going to store your experiments. 
 
 UCF24DETECTION is a dataset loader Class in `data/ucf24.py` that inherits `torch.utils.data.Dataset` making it fully compatible with the `torchvision.datasets` [API](http://pytorch.org/docs/torchvision/datasets.html).
 
 
 ## Training SSD
 - Requires fc-reduced [VGG-16](https://arxiv.org/abs/1409.1556) model weights, 
-weights are laready there in dataset tar ball under train_data subfolder.
+weights are already there in dataset tarball under `train_data` subfolder.
 - By default, we assume that you have downloaded that dataset.    
-- To train SSD using the train script simply specify the parameters listed in `train-ucf24.py` as a flag or manually change them.
+- To train SSD using the training script simply specify the parameters listed in `train-ucf24.py` as a flag or manually change them.
 
 Let's assume that you extracted dataset in `/home/user/ucf24/` directory then your train command from the root directory of this repo is going to be: 
 
