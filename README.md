@@ -300,7 +300,7 @@ To use pre-trained model download the pre-trained weights from the links given b
 
 ## TODO
  - Incorporate JHMDB-21 dataset
- - Convert matlab part into python
+ - Convert matlab part into python (happy to accept PR)
 
 ## Citation
 If this work has been helpful in your research please consider citing [1] and [4]
@@ -319,5 +319,5 @@ If this work has been helpful in your research please consider citing [1] and [4
 - [4] G. Singh, S Saha, M. Sapienza, P. H. S. Torr and F Cuzzolin. Online Real time Multiple Spatiotemporal Action Localisation and Prediction. ICCV, 2017.
 - [5] Kalogeiton, V., Weinzaepfel, P., Ferrari, V. and Schmid, C., 2017. Action Tubelet Detector for Spatio-Temporal Action Localization. ICCV, 2017.
 - [Original SSD Implementation (CAFFE)](https://github.com/weiliu89/caffe/tree/ssd)
-- A huge thank to Max deGroot, Ellis Brown for Pytorch implementation of [SSD](https://github.com/amdegroot/ssd.pytorch)
+- A huge thanks to Max deGroot, Ellis Brown for Pytorch implementation of [SSD](https://github.com/amdegroot/ssd.pytorch)
  
