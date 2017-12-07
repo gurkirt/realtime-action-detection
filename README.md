@@ -24,12 +24,12 @@ accommodate ucf24 dataset.
 - <a href='#references'>Reference</a>
 
 ## Installation
-- Install [PyTorch](http://pytorch.org/) by selecting your environment on the website and running the appropriate command.
+- Install [PyTorch](http://pytorch.org/)(version v0.2, you try v0.03 but that would require few fixes) by selecting your environment on the website and running the appropriate command.
 - Please install cv2 as well. I recommend using anaconda 3.6 and it's opnecv package.
 - You will also need Matlab. If you have distributed computing license then it would be faster otherwise it should also be fine. 
 Just replace <code>parfor</code> with simple `for` in Matlab scripts. I would be happy to accept a PR for python version of this part.
 - Clone this repository. 
-  * Note: We currently only support Python 3+ on Linux system
+  * Note: We currently only support Python 3+ with Pytorch version v0.2 on Linux system.
 - We currently only support [UCF24](http://www.thumos.info/download.html) with [revised annotaions](https://github.com/gurkirt/corrected-UCF101-Annots) released with our paper, we will try to add [JHMDB21](http://jhmdb.is.tue.mpg.de/) as soon as possible, but can't promise, you can check out our [BMVC2016 code](https://bitbucket.org/sahasuman/bmvc2016_code) to get started your experiments on JHMDB21.
 - To simulate the same training and evaluation setup we provide extracted `rgb` images from videos along with optical flow images (both `brox flow` and `real-time flow`) computed for the UCF24 dataset.
 You can download it from my [google drive link](https://drive.google.com/file/d/1o2l6nYhd-0DDXGP-IPReBP4y1ffVmGSE/view?usp=sharing)
