@@ -1,10 +1,7 @@
 *.ods#
 *.m~
 *.prototxt~
-*.txt~
 *.xml~
 *.log
-*.txt
-*.txt~
 *~
 /results
