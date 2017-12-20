@@ -1,15 +1,16 @@
 % -------------------------------------------------------------------------
-function live_paths = incremental_linking(frames,iouth,costtype,jumpgap,threhgap)
+function [live_paths, dead_paths] = incremental_linking(t, frames, iouth, costtype, jumpgap,...
+    live_paths, dead_paths, a)
 % -------------------------------------------------------------------------
-
-num_frames = length(frames);
-
+% action_count = 1;
+% num_frames = length(frames);
 %% online path building
-
-live_paths = struct(); %% Stores live paths
-dead_paths = struct(); %% Store the paths that has been terminated
-dp_count = 0;
-for  t = 1:num_frames
+% live_paths = struct(); %% Stores live paths
+% dead_paths = struct(); %% Store the paths that has been terminated
+% dp_count = 0;
+% costs
+%D = zeros(24, 1+1); % add an extra column           
+%for t = 1:num_frames
     num_box = size(frames(t).boxes,1);
     if t==1
         for b = 1 : num_box
@@ -20,17 +21,17 @@ for  t = 1:num_frames
             live_paths(b).foundAT(t) = 1;
             live_paths(b).count = 1;
             live_paths(b).lastfound = 0; %less than 5 mean yes
+            live_paths(b).D = [];
+            live_paths(b).phi = [];
         end
     else
         lp_count = getPathCount(live_paths);
-        
-        %         fprintf(' %d ', t);
+        % fprintf(' %d ', t);
         edge_scores = zeros(lp_count,num_box);
-        
+
         for lp = 1 : lp_count
             edge_scores(lp,:) = score_of_edge(live_paths(lp),frames(t),iouth,costtype);
         end
-        
         
         dead_count = 0 ;
         coverd_boxes = zeros(1,num_box);
@@ -48,6 +49,8 @@ for  t = 1:num_frames
                     live_paths(lp).pathScore = live_paths(lp).pathScore + m_score;
                     live_paths(lp).foundAT(lpc) = t;
                     live_paths(lp).lastfound = 0;
+                    %live_paths(lp).D = [];
+                    %live_paths(lp).phi = [];
                     edge_scores(:,maxInd) = 0;
                     coverd_boxes(maxInd) = 1;
                 else
@@ -57,7 +60,6 @@ for  t = 1:num_frames
                 scores = sort(live_paths(lp).scores,'ascend');
                 num_sc = length(scores);
                 path_order_score(lp) = mean(scores(max(1,num_sc-jumpgap):num_sc));
-                
             else
                 dead_count = dead_count + 1;
             end
@@ -65,8 +67,8 @@ for  t = 1:num_frames
         
         % Sort the path based on scoe of the boxes and terminate dead path
         
-        [live_paths,dead_paths,dp_count] = sort_live_paths(live_paths,....
-            path_order_score,dead_paths,dp_count,jumpgap);
+        [live_paths,dead_paths,dead_paths(1).dp_count] = sort_live_paths(live_paths,....
+            path_order_score,dead_paths,dead_paths(1).dp_count,jumpgap);
         lp_count = getPathCount(live_paths);
         % start new paths using boxes that are not assigned
         if sum(coverd_boxes)<num_box
@@ -80,32 +82,86 @@ for  t = 1:num_frames
                     live_paths(lp_count).foundAT = t;
                     live_paths(lp_count).count = 1;
                     live_paths(lp_count).lastfound = 0;
+                    live_paths(lp_count).D = [];
+                    live_paths(lp_count).phi = [];
                 end
             end
         end
     end
-end
+    
+    %%% temporal label smoothing %%%
+    alpha_now = 3;
+    %action_paths = live_paths;
+    num_act_paths = getPathCount(live_paths);
+    for p = 1 : num_act_paths
+        if live_paths(p).foundAT(end) == t    
+            M = live_paths(p).allScores(end,1:24)';
+            M = M +20;
+            [r,c] = size(M);
+            % costs
+            if size(live_paths(p).D) == [0,0]
+                live_paths(p).D = zeros(24,1); % put the maximum cost
+            end
+            
+            live_paths(p).D = [live_paths(p).D, M];
+            v = [1:r]';
+            live_paths(p).phi = [live_paths(p).phi,zeros(r,c)];
 
-live_paths = fill_gaps(live_paths,threhgap);
-dead_paths = fill_gaps(dead_paths,threhgap);
-lp_count = getPathCount(live_paths);
-lp = lp_count+1;
-if isfield(dead_paths,'boxes')
-    for dp = 1 : length(dead_paths)
-        live_paths(lp).start = dead_paths(dp).start;
-        live_paths(lp).end = dead_paths(dp).end;
-        live_paths(lp).boxes = dead_paths(dp).boxes;
-        live_paths(lp).scores = dead_paths(dp).scores;
-        live_paths(lp).allScores = dead_paths(dp).allScores;
-        live_paths(lp).pathScore = dead_paths(dp).pathScore;
-        live_paths(lp).foundAT = dead_paths(dp).foundAT;
-        live_paths(lp).count = dead_paths(dp).count;
-        live_paths(lp).lastfound = dead_paths(dp).lastfound;
-        lp = lp + 1;
+            for i = 1:r; % r = 10   
+                [dmax, tb] = max([live_paths(p).D(:, end-1)-alpha_now*(v~=i)]);
+                %keyboard;
+                live_paths(p).D(i,end) = live_paths(p).D(i,end)+dmax;
+                live_paths(p).phi(i,end) = tb;
+            end
+
+            % Traceback from last frame
+            D_new = live_paths(p).D(:,2:end);
+            % best of the last column
+            c = size(D_new,2);
+            q = c; % frame inidces
+            [~,pp] = max(D_new(:,end));
+%             i = pp; % index of max element in last column of D, 
+%             j = q; % frame indices
+
+            %while j>1 % loop over frames in a video
+%             tb = live_paths(p).phi(i,j); % i -> index of max element in last column of D, j-> last frame index or last column of D
+%             pp = [tb,pp];
+%             q = [j-1,q];
+%             j = j-1;
+%             i = tb;
+            %end
+%             pred_path = pp;
+%             time = q;
+%             D_my = D_new;
+            %[ Ts, Te, Scores, Label, DpPathScore] = extract_action(pred_path,time,D,a);
+        end
     end
-end
+    
+    %live_paths = sort_paths(live_paths);
+    
+%end
 
+% live_paths = fill_gaps(live_paths,threhgap);
+% dead_paths = fill_gaps(dead_paths,threhgap);
+% lp_count = getPathCount(live_paths);
+% lp = lp_count+1;
+% if isfield(dead_paths,'boxes')
+%     for dp = 1 : length(dead_paths)
+%         live_paths(lp).start = dead_paths(dp).start;
+%         live_paths(lp).end = dead_paths(dp).end;
+%         live_paths(lp).boxes = dead_paths(dp).boxes;
+%         live_paths(lp).scores = dead_paths(dp).scores;
+%         live_paths(lp).allScores = dead_paths(dp).allScores;
+%         live_paths(lp).pathScore = dead_paths(dp).pathScore;
+%         live_paths(lp).foundAT = dead_paths(dp).foundAT;
+%         live_paths(lp).count = dead_paths(dp).count;
+%         live_paths(lp).lastfound = dead_paths(dp).lastfound;
+%         lp = lp + 1;
+%     end
+% end
 live_paths = sort_paths(live_paths);
+
+
 
 
 % -------------------------------------------------------------------------
@@ -126,8 +182,8 @@ if lp_count>0
     [~,ind] = sort(path_order_score,'descend');
     for lpc = 1 : length(live_paths)
         olp = ind(lpc);
-        sorted_live_paths(lpc).start = live_paths(olp).start;
-        sorted_live_paths(lpc).end = live_paths(olp).end;
+        %sorted_live_paths(lpc).start = live_paths(olp).start;
+        %sorted_live_paths(lpc).end = live_paths(olp).end;
         sorted_live_paths(lpc).boxes = live_paths(olp).boxes;
         sorted_live_paths(lpc).scores = live_paths(olp).scores;
         sorted_live_paths(lpc).allScores = live_paths(olp).allScores;
@@ -135,6 +191,8 @@ if lp_count>0
         sorted_live_paths(lpc).foundAT = live_paths(olp).foundAT;
         sorted_live_paths(lpc).count = live_paths(olp).count;
         sorted_live_paths(lpc).lastfound = live_paths(olp).lastfound;
+        sorted_live_paths(lpc).D = live_paths(olp).D;
+        sorted_live_paths(lpc).phi = live_paths(olp).phi;
     end
 end
 
@@ -198,6 +256,8 @@ for lp = 1 : getPathCount(live_paths)
         sorted_live_paths(lpc).foundAT = live_paths(olp).foundAT;
         sorted_live_paths(lpc).count = live_paths(olp).count;
         sorted_live_paths(lpc).lastfound = live_paths(olp).lastfound;
+        sorted_live_paths(lpc).D = live_paths(olp).D;
+        sorted_live_paths(lpc).phi = live_paths(olp).phi;
     else
         dp_count = dp_count + 1;
         dead_paths(dp_count).boxes = live_paths(olp).boxes;
@@ -207,7 +267,8 @@ for lp = 1 : getPathCount(live_paths)
         dead_paths(dp_count).foundAT = live_paths(olp).foundAT;
         dead_paths(dp_count).count = live_paths(olp).count;
         dead_paths(dp_count).lastfound = live_paths(olp).lastfound;
-        
+        dead_paths(dp_count).D = live_paths(olp).D;
+        dead_paths(dp_count).phi = live_paths(olp).phi;
     end
 end
 
@@ -268,3 +329,26 @@ ar2 = bounds2(:,3).*bounds2(:,4);
 union = bsxfun(@plus,ar1,ar2')-inters;
 
 iou = inters./(union+eps);
+
+function [ts,te,scores,label,total_score] = extract_action(p,q,D,action)
+% p(1:1) = 1;
+indexs = find(p==action);
+
+if isempty(indexs)
+    ts = []; te = []; scores = []; label = []; total_score = [];
+    
+else
+    indexs_diff = [indexs,indexs(end)+1] - [indexs(1)-2,indexs];
+    ts = find(indexs_diff>1);
+    
+    if length(ts)>1
+        te = [ts(2:end)-1,length(indexs)];
+    else
+        te = length(indexs);
+    end
+    ts = indexs(ts);
+    te = indexs(te);
+    scores = (D(action,q(te)) - D(action,q(ts)))./(te-ts);
+    label = ones(length(ts),1)*action;
+    total_score = ones(length(ts),1)*D(p(end),q(end))/length(p);
+end
