@@ -79,8 +79,10 @@ def make_lists(rootpath, imgtype, split=1, fulltest=False):
     train_action_counts = np.zeros(len(CLASSES), dtype=np.int32)
     test_action_counts = np.zeros(len(CLASSES), dtype=np.int32)
 
-    ratios = np.asarray([1.1,0.8,4.7,1.4,0.9,2.6,2.2,3.0,3.0,5.0,6.2,2.7,3.5,3.1,4.3,2.5,4.5,3.4,6.7,3.6,1.6,3.4,0.6,4.3])
-    # ratios = np.ones_like(ratios) #TODO:uncomment this line and line 155, 156 to compute new ratios might be useful for JHMDB21
+    #4500ratios = np.asarray([1.1, 0.8, 4.7, 1.4, 0.9, 2.6, 2.2, 3.0, 3.0, 5.0, 6.2, 2.7,
+    #                     3.5, 3.1, 4.3, 2.5, 4.5, 3.4, 6.7, 3.6, 1.6, 3.4, 0.6, 4.3])
+    ratios = np.asarray([1.03, 0.75, 4.22, 1.32, 0.8, 2.36, 1.99, 2.66, 2.68, 4.51, 5.56, 2.46, 3.17, 2.76, 3.89, 2.28, 4.01, 3.08, 6.06, 3.28, 1.51, 3.05, 0.6, 3.84])
+    #ratios = np.ones_like(ratios) #TODO:uncomment this line and line 155, 156 to compute new ratios might be useful for JHMDB21
     video_list = []
     for vid, videoname in enumerate(sorted(database.keys())):
         video_list.append(videoname)
@@ -91,7 +93,7 @@ def make_lists(rootpath, imgtype, split=1, fulltest=False):
         lastf = numf-1
         if videoname not in trainvideos:
             istrain = False
-            step = ratios[actidx]*2.0
+            step = max(1, ratios[actidx])*3
         if fulltest:
             step = 1
             lastf = numf
@@ -110,43 +112,46 @@ def make_lists(rootpath, imgtype, split=1, fulltest=False):
                 box = box.astype(np.float32)
                 box[2] += box[0]  #convert width to xmax
                 box[3] += box[1]  #converst height to ymax
-                tube_labels[frame_num, tubeid] = label+1  # change label in tube_labels matrix to 1 form 0
+                tube_labels[frame_num, tubeid] = 1 #label+1  # change label in tube_labels matrix to 1 form 0
                 tube_boxes[frame_num][tubeid] = box  # put the box in matrix of lists
 
         possible_frame_nums = np.arange(0, lastf, step)
         # print('numf',numf,possible_frame_nums[-1])
         for frame_num in possible_frame_nums: # loop from start to last possible frame which can make a legit sequence
-            frame_num = np.int32(frame_num)
+            frame_num = int(frame_num)
             check_tubes = tube_labels[frame_num,:]
 
-            if np.sum(check_tubes>0)>0:  # check if there aren't any semi overlapping tubes
+            if np.sum(check_tubes)>0:  # check if there aren't any semi overlapping tubes
                 all_boxes = []
                 labels = []
                 image_name = imagesDir + videoname+'/{:05d}.jpg'.format(frame_num+1)
-                label_name = rootpath + 'labels/' + videoname + '/{:05d}.txt'.format(frame_num + 1)
-
+                #label_name = rootpath + 'labels/' + videoname + '/{:05d}.txt'.format(frame_num + 1)
                 assert os.path.isfile(image_name), 'Image does not exist'+image_name
                 for tubeid, tube in enumerate(annotations):
+                    label = tube['label']
                     if tube_labels[frame_num, tubeid]>0:
                         box = np.asarray(tube_boxes[frame_num][tubeid])
                         all_boxes.append(box)
-                        labels.append(tube_labels[frame_num, tubeid])
+                        labels.append(label)
 
                 if istrain: # if it is training video
-                    trainlist.append([vid, frame_num+1, np.asarray(labels)-1, np.asarray(all_boxes)])
-                    train_action_counts[actidx] += len(labels)
+                    trainlist.append([vid, frame_num+1, np.asarray(labels), np.asarray(all_boxes)])
+                    train_action_counts[actidx] += 1 #len(labels)
                 else: # if test video and has micro-tubes with GT
-                    testlist.append([vid, frame_num+1, np.asarray(labels)-1, np.asarray(all_boxes)])
-                    test_action_counts[actidx] += len(labels)
+                    testlist.append([vid, frame_num+1, np.asarray(labels), np.asarray(all_boxes)])
+                    test_action_counts[actidx] += 1 #len(labels)
             elif fulltest and not istrain: # if test video with no ground truth and fulltest is trues
                 testlist.append([vid, frame_num+1, np.asarray([9999]), np.zeros((1,4))])
 
     for actidx, act_count in enumerate(train_action_counts): # just to see the distribution of train and test sets
         print('train {:05d} test {:05d} action {:02d} {:s}'.format(act_count, test_action_counts[actidx] , int(actidx), CLASSES[actidx]))
 
-    # newratios = train_action_counts/4000
-    # print('new   ratios', newratios)
-    # print('older ratios', ratios)
+    newratios = train_action_counts/5000
+    #print('new   ratios', newratios)
+    line = '['
+    for r in newratios:
+        line +='{:0.2f}, '.format(r)
+    print(line+']')
     print('Trainlistlen', len(trainlist), ' testlist ', len(testlist))
 
     return trainlist, testlist, video_list
@@ -200,7 +205,6 @@ class UCF24Detection(data.Dataset):
         height, width, channels = img.shape
 
         target = self.target_transform(annot_info[3], annot_info[2], width, height)
-
 
         if self.transform is not None:
             target = np.array(target)

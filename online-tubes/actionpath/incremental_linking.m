@@ -51,7 +51,7 @@ for  t = 1:num_frames
                     edge_scores(:,maxInd) = 0;
                     coverd_boxes(maxInd) = 1;
                 else
-                    live_paths(lp).lastfound = live_paths(lp_count).lastfound +1;
+                    live_paths(lp).lastfound = live_paths(lp).lastfound +1;
                 end
                 
                 scores = sort(live_paths(lp).scores,'ascend');

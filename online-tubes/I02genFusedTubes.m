@@ -108,7 +108,7 @@ if ~exist(saveName,'file')
             % read action paths
             actionpaths = readALLactionPaths(dopts.vidList,dopts.actPathDir,1);
             %% perform temporal trimming
-            smoothedtubes = parActionPathSmoother(actionpaths,alpha*ones(numActions,1),numActions);
+            smoothedtubes = PARactionPathSmoother(actionpaths,alpha*ones(numActions,1),numActions);
             save(tubesSaveName,'smoothedtubes','-v7.3');
         else
             load(tubesSaveName)

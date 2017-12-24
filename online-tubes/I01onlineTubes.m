@@ -9,10 +9,10 @@
 
 function I01onlineTubes()
 
-data_root = '/mnt/mars-fast/datasets';
-save_root = '/mnt/mars-gamma/ssd-work';
-iteration_num_rgb = [120000]; % you can also evaluate on multiple iertations
-iteration_num_flow = [120000]; % you can also evaluate on multiple iertations
+data_root = '/mnt/sun-gamma/datasets';
+save_root = '/mnt/sun-gamma/datasets';
+iteration_num_rgb = [50000, 60000, 70000, 80000, 100000, 120000]; % you can also evaluate on multiple iterations
+iteration_num_flow =[50000, 70000, 90000, 100000, 120000]; % you can also evaluate on multiple iterations
 
 % add subfolder to matlab paths
 addpath(genpath('gentube/'));
@@ -32,7 +32,7 @@ alldopts = cell(2,1);
 count = 1;
 gap=3;
 
-for setind = 1:length(completeList)
+for setind = 1:2 %:length(completeList)
     [dataset, listid, imtypes, iteration_nums, costTypes] = enumurateList(completeList{setind});
     for ct = 1:length(costTypes)
         costtype = costTypes{ct};
@@ -77,8 +77,8 @@ save_dir = [save_root,'/results/'];
 if ~isdir(save_dir)
     mkdir(save_dir)
 end
-
-save([save_dir,'online_tubes_results.mat'],'results')
+save_dir
+save([save_dir,'online_tubes_results_CONV.mat'],'results')
 
 %% Function to enumrate options
 function [dataset,listnum,imtypes,weights,costTypes] = enumurateList(sublist)
@@ -99,14 +99,14 @@ if ~exist(saveName,'file')
     annot = load(dopts.annotFile);
     annot = annot.annot;
     testvideos = getVideoNames(dopts.vidList);
-    for  alpha = 3 
+    actionpaths = readALLactionPaths(dopts.vidList,dopts.actPathDir,1);
+    for  alpha = [1, 3, 5, 6, 8, 10]
         fprintf('alpha %03d ',alpha);
         tubesSaveName = sprintf('%stubes-alpha%04d.mat',dopts.tubeDir,uint16(alpha*100));
         if ~exist(tubesSaveName,'file')
             % read action paths
-            actionpaths = readALLactionPaths(dopts.vidList,dopts.actPathDir,1);
             %% perform temporal trimming
-            smoothedtubes = parActionPathSmoother(actionpaths,alpha*ones(numActions,1),numActions);
+            smoothedtubes = PARactionPathSmoother(actionpaths,alpha*ones(numActions,1),numActions);
             save(tubesSaveName,'smoothedtubes','-v7.3');
         else
             load(tubesSaveName)

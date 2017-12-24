@@ -42,20 +42,20 @@ parser.add_argument('--input_type', default='rgb', type=str, help='INput tyep de
 parser.add_argument('--jaccard_threshold', default=0.5, type=float, help='Min Jaccard index for matching')
 parser.add_argument('--batch_size', default=32, type=int, help='Batch size for training')
 parser.add_argument('--resume', default=None, type=str, help='Resume from checkpoint')
-parser.add_argument('--num_workers', default=0, type=int, help='Number of workers used in dataloading')
-parser.add_argument('--max_iter', default=90000, type=int, help='Number of training iterations')
+parser.add_argument('--num_workers', default=4, type=int, help='Number of workers used in dataloading')
+parser.add_argument('--max_iter', default=150000, type=int, help='Number of training iterations')
 parser.add_argument('--man_seed', default=123, type=int, help='manualseed for reproduction')
 parser.add_argument('--cuda', default=True, type=str2bool, help='Use cuda to train model')
 parser.add_argument('--ngpu', default=1, type=str2bool, help='Use cuda to train model')
-parser.add_argument('--lr', '--learning-rate', default=0.0005, type=float, help='initial learning rate')
+parser.add_argument('--lr', '--learning-rate', default=1e-3, type=float, help='initial learning rate')
 parser.add_argument('--momentum', default=0.9, type=float, help='momentum')
-parser.add_argument('--stepvalues', default='70000,120000', type=str, help='iter number wher elearing rate to be dropped')
+parser.add_argument('--stepvalues', default='30000,60000,100000', type=str, help='iter numbers where learing rate to be dropped')
 parser.add_argument('--weight_decay', default=5e-4, type=float, help='Weight decay for SGD')
-parser.add_argument('--gamma', default=0.2, type=float, help='Gamma update for SGD')
-parser.add_argument('--log_iters', default=True, type=bool, help='Print the loss at each iteration')
+parser.add_argument('--gamma', default=0.1, type=float, help='Gamma update for SGD')
 parser.add_argument('--visdom', default=False, type=str2bool, help='Use visdom to for loss visualization')
+parser.add_argument('--vis_port', default=8097, type=int, help='Port for Visdom Server')
 parser.add_argument('--data_root', default='/mnt/mars-fast/datasets/', help='Location of VOC root directory')
-parser.add_argument('--save_root', default='/mnt/mars-gamma/ssd-work/', help='Location to save checkpoint models')
+parser.add_argument('--save_root', default='/mnt/mars-gamma/datasets/', help='Location to save checkpoint models')
 parser.add_argument('--iou_thresh', default=0.5, type=float, help='Evaluation threshold')
 parser.add_argument('--conf_thresh', default=0.01, type=float, help='Confidence threshold for evaluation')
 parser.add_argument('--nms_thresh', default=0.45, type=float, help='NMS threshold')
@@ -69,10 +69,8 @@ torch.manual_seed(args.man_seed)
 if args.cuda:
     torch.cuda.manual_seed_all(args.man_seed)
 
-if args.cuda and torch.cuda.is_available():
-    torch.set_default_tensor_type('torch.cuda.FloatTensor')
-else:
-    torch.set_default_tensor_type('torch.FloatTensor')
+
+torch.set_default_tensor_type('torch.FloatTensor')
 
 
 def main():
@@ -97,17 +95,6 @@ def main():
         os.makedirs(args.save_root)
 
     net = build_ssd(300, args.num_classes)
-    if args.input_type == 'fastOF':
-        print('Download pretrained brox flow trained model weights and place them at:::=> ',args.data_root + 'ucf24/train_data/brox_wieghts.pth')
-        pretrained_weights = args.data_root + 'ucf24/train_data/brox_wieghts.pth'
-        print('Loading base network...')
-        net.load_state_dict(torch.load(pretrained_weights))
-    else:
-        vgg_weights = torch.load(args.data_root +'ucf24/train_data/' + args.basenet)
-        print('Loading base network...')
-        net.vgg.load_state_dict(vgg_weights)
-
-    args.data_root += args.dataset + '/'
 
     if args.cuda:
         net = net.cuda()
@@ -126,6 +113,18 @@ def main():
     net.extras.apply(weights_init)
     net.loc.apply(weights_init)
     net.conf.apply(weights_init)
+
+    if args.input_type == 'fastOF':
+        print('Download pretrained brox flow trained model weights and place them at:::=> ',args.data_root + 'ucf24/train_data/brox_wieghts.pth')
+        pretrained_weights = args.data_root + 'ucf24/train_data/brox_wieghts.pth'
+        print('Loading base network...')
+        net.load_state_dict(torch.load(pretrained_weights))
+    else:
+        vgg_weights = torch.load(args.data_root +'ucf24/train_data/' + args.basenet)
+        print('Loading base network...')
+        net.vgg.load_state_dict(vgg_weights)
+
+    args.data_root += args.dataset + '/'
 
     parameter_dict = dict(net.named_parameters()) # Get parmeter of network in dictionary format wtih name being key
     params = []
@@ -173,7 +172,7 @@ def train(args, net, optimizer, criterion, scheduler):
 
         import visdom
         viz = visdom.Visdom()
-        viz.port = 8097
+        viz.port = args.vis_port
         viz.env = args.exp_name
         # initialize visdom loss plot
         lot = viz.line(
@@ -210,106 +209,106 @@ def train(args, net, optimizer, criterion, scheduler):
     itr_count = 0
     torch.cuda.synchronize()
     t0 = time.perf_counter()
-    for iteration in range(args.max_iter + 1):
-        if (not batch_iterator) or (iteration % epoch_size == 0):
-            # create batch iterator
-            batch_iterator = iter(train_data_loader)
+    iteration = 0
+    while iteration <= args.max_iter:
+        for i, (images, targets, img_indexs) in enumerate(train_data_loader):
 
-        # load train data
-        images, targets, img_indexs = next(batch_iterator)
-        if args.cuda:
-            images = Variable(images.cuda())
-            targets = [Variable(anno.cuda(), volatile=True) for anno in targets]
-        else:
-            images = Variable(images)
-            targets = [Variable(anno, volatile=True) for anno in targets]
-        # forward
-        out = net(images)
-        # backprop
-        optimizer.zero_grad()
+            if iteration > args.max_iter:
+                break
+            iteration += 1
+            if args.cuda:
+                images = Variable(images.cuda())
+                targets = [Variable(anno.cuda(), volatile=True) for anno in targets]
+            else:
+                images = Variable(images)
+                targets = [Variable(anno, volatile=True) for anno in targets]
+            # forward
+            out = net(images)
+            # backprop
+            optimizer.zero_grad()
 
-        loss_l, loss_c = criterion(out, targets)
-        loss = loss_l + loss_c
-        loss.backward()
-        optimizer.step()
-        scheduler.step()
-        loc_loss = loss_l.data[0]
-        conf_loss = loss_c.data[0]
-        # print('Loss data type ',type(loc_loss))
-        loc_losses.update(loc_loss)
-        cls_losses.update(conf_loss)
-        losses.update((loc_loss + conf_loss)/2.0)
-
-
-        if iteration % args.print_step == 0 and iteration>0:
-            if args.visdom:
-                losses_list = [loc_losses.val, cls_losses.val, losses.val, loc_losses.avg, cls_losses.avg, losses.avg]
-                viz.line(X=torch.ones((1, 6)).cpu() * iteration,
-                    Y=torch.from_numpy(np.asarray(losses_list)).unsqueeze(0).cpu(),
-                    win=lot,
-                    update='append')
+            loss_l, loss_c = criterion(out, targets)
+            loss = loss_l + loss_c
+            loss.backward()
+            optimizer.step()
+            scheduler.step()
+            loc_loss = loss_l.data[0]
+            conf_loss = loss_c.data[0]
+            # print('Loss data type ',type(loc_loss))
+            loc_losses.update(loc_loss)
+            cls_losses.update(conf_loss)
+            losses.update((loc_loss + conf_loss)/2.0)
 
 
-            torch.cuda.synchronize()
-            t1 = time.perf_counter()
-            batch_time.update(t1 - t0)
+            if iteration % args.print_step == 0 and iteration>0:
+                if args.visdom:
+                    losses_list = [loc_losses.val, cls_losses.val, losses.val, loc_losses.avg, cls_losses.avg, losses.avg]
+                    viz.line(X=torch.ones((1, 6)).cpu() * iteration,
+                        Y=torch.from_numpy(np.asarray(losses_list)).unsqueeze(0).cpu(),
+                        win=lot,
+                        update='append')
 
-            print_line = 'Itration {:06d}/{:06d} loc-loss {:.3f}({:.3f}) cls-loss {:.3f}({:.3f}) ' \
-                         'average-loss {:.3f}({:.3f}) Timer {:0.3f}({:0.3f})'.format(
-                          iteration, args.max_iter, loc_losses.val, loc_losses.avg, cls_losses.val,
-                          cls_losses.avg, losses.val, losses.avg, batch_time.val, batch_time.avg)
 
-            torch.cuda.synchronize()
-            t0 = time.perf_counter()
-            log_file.write(print_line+'\n')
-            print(print_line)
+                torch.cuda.synchronize()
+                t1 = time.perf_counter()
+                batch_time.update(t1 - t0)
 
-            # if args.visdom and args.send_images_to_visdom:
-            #     random_batch_index = np.random.randint(images.size(0))
-            #     viz.image(images.data[random_batch_index].cpu().numpy())
-            itr_count += 1
+                print_line = 'Itration {:06d}/{:06d} loc-loss {:.3f}({:.3f}) cls-loss {:.3f}({:.3f}) ' \
+                             'average-loss {:.3f}({:.3f}) Timer {:0.3f}({:0.3f})'.format(
+                              iteration, args.max_iter, loc_losses.val, loc_losses.avg, cls_losses.val,
+                              cls_losses.avg, losses.val, losses.avg, batch_time.val, batch_time.avg)
 
-            if itr_count % args.loss_reset_step == 0 and itr_count > 0:
-                loc_losses.reset()
-                cls_losses.reset()
-                losses.reset()
-                batch_time.reset()
-                print('Reset accumulators of ', args.exp_name,' at', itr_count*args.print_step)
-                itr_count = 0
+                torch.cuda.synchronize()
+                t0 = time.perf_counter()
+                log_file.write(print_line+'\n')
+                print(print_line)
 
-        if (iteration % args.eval_step == 0 or iteration == 5000) and iteration>0:
-            torch.cuda.synchronize()
-            tvs = time.perf_counter()
-            print('Saving state, iter:', iteration)
-            torch.save(net.state_dict(), args.save_root+'ssd300_ucf24_' +
-                       repr(iteration) + '.pth')
+                # if args.visdom and args.send_images_to_visdom:
+                #     random_batch_index = np.random.randint(images.size(0))
+                #     viz.image(images.data[random_batch_index].cpu().numpy())
+                itr_count += 1
 
-            net.eval() # switch net to evaluation mode
-            mAP, ap_all, ap_strs = validate(args, net, val_data_loader, val_dataset, iteration, iou_thresh=args.iou_thresh)
+                if itr_count % args.loss_reset_step == 0 and itr_count > 0:
+                    loc_losses.reset()
+                    cls_losses.reset()
+                    losses.reset()
+                    batch_time.reset()
+                    print('Reset accumulators of ', args.exp_name,' at', itr_count*args.print_step)
+                    itr_count = 0
 
-            for ap_str in ap_strs:
-                print(ap_str)
-                log_file.write(ap_str+'\n')
-            ptr_str = '\nMEANAP:::=>'+str(mAP)+'\n'
-            print(ptr_str)
-            log_file.write(ptr_str)
+            if (iteration % args.eval_step == 0 or iteration == 5000) and iteration>0:
+                torch.cuda.synchronize()
+                tvs = time.perf_counter()
+                print('Saving state, iter:', iteration)
+                torch.save(net.state_dict(), args.save_root+'ssd300_ucf24_' +
+                           repr(iteration) + '.pth')
 
-            if args.visdom:
-                aps = [mAP]
-                for ap in ap_all:
-                    aps.append(ap)
-                viz.line(
-                    X=torch.ones((1, args.num_classes)).cpu() * iteration,
-                    Y=torch.from_numpy(np.asarray(aps)).unsqueeze(0).cpu(),
-                    win=val_lot,
-                    update='append'
-                        )
-            net.train() # Switch net back to training mode
-            torch.cuda.synchronize()
-            t0 = time.perf_counter()
-            prt_str = '\nValidation TIME::: {:0.3f}\n\n'.format(t0-tvs)
-            print(prt_str)
-            log_file.write(ptr_str)
+                net.eval() # switch net to evaluation mode
+                mAP, ap_all, ap_strs = validate(args, net, val_data_loader, val_dataset, iteration, iou_thresh=args.iou_thresh)
+
+                for ap_str in ap_strs:
+                    print(ap_str)
+                    log_file.write(ap_str+'\n')
+                ptr_str = '\nMEANAP:::=>'+str(mAP)+'\n'
+                print(ptr_str)
+                log_file.write(ptr_str)
+
+                if args.visdom:
+                    aps = [mAP]
+                    for ap in ap_all:
+                        aps.append(ap)
+                    viz.line(
+                        X=torch.ones((1, args.num_classes)).cpu() * iteration,
+                        Y=torch.from_numpy(np.asarray(aps)).unsqueeze(0).cpu(),
+                        win=val_lot,
+                        update='append'
+                            )
+                net.train() # Switch net back to training mode
+                torch.cuda.synchronize()
+                t0 = time.perf_counter()
+                prt_str = '\nValidation TIME::: {:0.3f}\n\n'.format(t0-tvs)
+                print(prt_str)
+                log_file.write(ptr_str)
 
     log_file.close()
 

@@ -20,6 +20,7 @@ opts.weight = iteration_num;
 opts.listid = listid;
 
 testlist = ['testlist',listid];
+%testlist = 'testlist01';
 opts.vidList = sprintf('%s/%s/splitfiles/%s.txt',data_root,dataset,testlist);
 
 if strcmp(dataset,'ucf24')

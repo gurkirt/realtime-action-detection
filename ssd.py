@@ -38,7 +38,7 @@ class SSD(nn.Module):
         self.num_classes = num_classes
         # TODO: implement __call__ in PriorBox
         self.priorbox = PriorBox(v2)
-        self.priors = Variable(self.priorbox.forward(), volatile=True)
+        self.priors = Variable(self.priorbox.forward(), volatile=True).cuda()
         self.num_priors = self.priors.size(0)
         self.size = 300
 
