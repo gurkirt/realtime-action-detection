@@ -1,16 +1,16 @@
 # Real-time online Action Detection: ROAD
-An implementation of our work ([Online Real time Multiple Spatiotemporal Action Localisation and Prediction](https://arxiv.org/pdf/1611.08563.pdf) published in ICCV 2017.
+An implementation of our work ([Online Real-time Multiple Spatiotemporal Action Localisation and Prediction](https://arxiv.org/pdf/1611.08563.pdf)) published in ICCV 2017.
 
-Originaly, we used [Caffe](https://github.com/weiliu89/caffe/tree/ssd) implmentation of [SSD-V2](https://arxiv.org/abs/1512.02325)
+Originally, we used [Caffe](https://github.com/weiliu89/caffe/tree/ssd) implementation of [SSD-V2](https://arxiv.org/abs/1512.02325)
 for publication. I have forked the version of [SSD-CAFFE](https://github.com/gurkirt/caffe/tree/ssd) which I used to generate results for paper, you try that if you want to use caffe. You can use that repo if like caffe other I would recommend using this version.
-This implementations still is bit off from original work. It works slightly, better on lower IoU and higher IoU and vice-versa.
-Tube generation part in original implementations as same as this. I found that this implemenation of SSD is slight worse @ IoU greater or equal to 0.5 in context of UCF24 dataset. 
+This implementation is bit off from original work. It works slightly, better on lower IoU and higher IoU and vice-versa.
+Tube generation part in original implementations as same as this. I found that this implementation of SSD is slight worse @ IoU greater or equal to 0.5 in context of the UCF24 dataset. 
 
 I decided to release the code with [PyTorch](http://pytorch.org/) implementation of SSD, 
-because, it would be easier to reuse than caffe version (where installation itself could be an big issue).
+because it would be easier to reuse than caffe version (where installation itself could be a big issue).
 We build on Pytorch [implementation](https://github.com/amdegroot/ssd.pytorch) of SSD by Max deGroot, Ellis Brown.
-We made few changes like (different lr for bias and weights during optimisation) and simplified some parts to 
-accommodate ucf24 dataset.  
+We made few changes like (different learning rate for bias and weights during optimization) and simplified some parts to 
+accommodate ucf24 dataset. 
 
 ### Table of Contents
 - <a href='#installation'>Installation</a>
@@ -24,16 +24,16 @@ accommodate ucf24 dataset.
 - <a href='#references'>Reference</a>
 
 ## Installation
-- Install [PyTorch](http://pytorch.org/) by selecting your environment on the website and running the appropriate command.
+- Install [PyTorch](http://pytorch.org/)(version v0.2, you try v0.03 but that would require few fixes) by selecting your environment on the website and running the appropriate command.
 - Please install cv2 as well. I recommend using anaconda 3.6 and it's opnecv package.
 - You will also need Matlab. If you have distributed computing license then it would be faster otherwise it should also be fine. 
-Just replace <code>parfor</code> with simple `for` in matlab scripts. I would be happy to accept a PR for python version of this part.
+Just replace <code>parfor</code> with simple `for` in Matlab scripts. I would be happy to accept a PR for python version of this part.
 - Clone this repository. 
-  * Note: We currently only support Python 3+ on Linux system
-- We currently only support [UCF24](http://www.thumos.info/download.html) with [revised annotaions](https://github.com/gurkirt/corrected-UCF101-Annots) released with our paper, we will try to add [JHMDB21](http://jhmdb.is.tue.mpg.de/) as soon as possible, but can't promise, you can checkout our [BMVC2016 code](https://bitbucket.org/sahasuman/bmvc2016_code) to get started your experiments on JHMDB21.
-- To simulate the same training and evaluation setup we provide extracted `rgb` images from videos along with with optical flow images (both `brox flow` and `real-time flow`) computed for ucf24 dataset.
+  * Note: We currently only support Python 3+ with Pytorch version v0.2 on Linux system.
+- We currently only support [UCF24](http://www.thumos.info/download.html) with [revised annotaions](https://github.com/gurkirt/corrected-UCF101-Annots) released with our paper, we will try to add [JHMDB21](http://jhmdb.is.tue.mpg.de/) as soon as possible, but can't promise, you can check out our [BMVC2016 code](https://bitbucket.org/sahasuman/bmvc2016_code) to get started your experiments on JHMDB21.
+- To simulate the same training and evaluation setup we provide extracted `rgb` images from videos along with optical flow images (both `brox flow` and `real-time flow`) computed for the UCF24 dataset.
 You can download it from my [google drive link](https://drive.google.com/file/d/1o2l6nYhd-0DDXGP-IPReBP4y1ffVmGSE/view?usp=sharing)
-- We also support [Visdom](https://github.com/facebookresearch/visdom) for visualization of loss and frameAP on subset during training! 
+- We also support [Visdom](https://github.com/facebookresearch/visdom) for visualization of loss and frame-meanAP on subset during training.
   * To use Visdom in the browser: 
   ```Shell
   # First install Python server and client 
@@ -44,18 +44,18 @@ You can download it from my [google drive link](https://drive.google.com/file/d/
   * Then (during training) navigate to http://localhost:8097/ (see the Training section below for more details).
 
 ## Dataset
-To make things easy, we provide extracted `rgb` images from videos along with with optical flow images (both `brox flow` and `real-time flow`) computed for ucf24 dataset, 
+To make things easy, we provide extracted `rgb` images from videos along with optical flow images (both `brox flow` and `real-time flow`) computed for ucf24 dataset, 
 you can download it from my [google drive link](https://drive.google.com/file/d/1o2l6nYhd-0DDXGP-IPReBP4y1ffVmGSE/view?usp=sharing).
-It is almost 6Gb tar ball, download it and extract it wherever you going to store your experiments. 
+It is almost 6Gb tarball, download it and extract it wherever you going to store your experiments. 
 
 UCF24DETECTION is a dataset loader Class in `data/ucf24.py` that inherits `torch.utils.data.Dataset` making it fully compatible with the `torchvision.datasets` [API](http://pytorch.org/docs/torchvision/datasets.html).
 
 
 ## Training SSD
 - Requires fc-reduced [VGG-16](https://arxiv.org/abs/1409.1556) model weights, 
-weights are laready there in dataset tar ball under train_data subfolder.
+weights are already there in dataset tarball under `train_data` subfolder.
 - By default, we assume that you have downloaded that dataset.    
-- To train SSD using the train script simply specify the parameters listed in `train-ucf24.py` as a flag or manually change them.
+- To train SSD using the training script simply specify the parameters listed in `train-ucf24.py` as a flag or manually change them.
 
 Let's assume that you extracted dataset in `/home/user/ucf24/` directory then your train command from the root directory of this repo is going to be: 
 
@@ -70,17 +70,17 @@ CUDA_VISIBLE_DEVICES=0 python3 train-ucf24.py --data_root=/home/user/ucf24/ --sa
 --visdom=True --input_type=brox --stepvalues=70000,90000 --max_iter=120000
 ```
 
-Different paramneter in `train-ucf24.py` will result in different performance
+Different parameters in `train-ucf24.py` will result in different performance
 
 - Note:
   * Network occupies almost 9.2GB VRAM on a GPU, we used 1080Ti for training and normal training takes about 32-40 hrs 
-  * For instructions on Visdom usage/installation, see the <a href='#installation'>Installation</a> section. By default it is off.
+  * For instructions on Visdom usage/installation, see the <a href='#installation'>Installation</a> section. By default, it is off.
   * If you don't like to use visdom then you always keep track of train using logfile which is saved under save_root directory
   * During training checkpoint is saved every 10K iteration also log it's frame-level `frame-mean-ap` on a subset of 22k test images.
-  * We recommend to train for 120K iterations for all the input types.
+  * We recommend training for 120K iterations for all the input types.
 
 ## Building Tubes
-To generate the tubes and evaluate them, first, you will need frame-level detection then you can  navigate to 'online-tubes' to generate tubes using `I01onlineTubes` and `I02genFusedTubes`.
+To generate the tubes and evaluate them, first, you will need frame-level detection then you can navigate to 'online-tubes' to generate tubes using `I01onlineTubes` and `I02genFusedTubes`.
 
 ##### produce frame-level detection
 Once you have trained network then you can use `test-ucf24.py` to generate frame-level detections.
@@ -99,7 +99,7 @@ CUDA_VISIBLE_DEVICES=0 python3 test-ucf24.py --data_root=/home/user/ucf24/ --sav
 
 -Note
   * By default it will compute frame-level detections and store them as well as compute frame-mean-AP in models saved at 90k and 120k iteration.
-  * There is a log file file created for each iteration's frame-level evaluation.
+  * There is a log file created for each iteration's frame-level evaluation.
 
 ##### Build tubes
 You will need frame-level detections and you will need to navigate to `online-tubes`
@@ -114,12 +114,12 @@ Results are saved in `save_root/results.mat`. Additionally,`action-path` and `ac
 ##### frame-meanAP
 To compute frame-mAP you can use `frameAP.m` script. You will need to specify `data_root`, `data_root`.
 Use this script to produce results for your publication not the python one, both are almost identical,
-but thier ap computation from precision and recall is slightly different.
+but their ap computation from precision and recall is slightly different.
 
 ## Performance
 ##### UCF24 Test
-Table below is similiar to [table 1 in our paper](https://arxiv.org/pdf/1611.08563.pdf). It contains more info than
-that in paper, mostly about this implemenation.
+The table below is similar to [table 1 in our paper](https://arxiv.org/pdf/1611.08563.pdf). It contains more info than
+that in the paper, mostly about this implementation.
 <table style="width:100% th">
   <tr>
     <td>IoU Threshold = </td>
@@ -258,40 +258,37 @@ that in paper, mostly about this implemenation.
   </tr>
 </table>
 
-##### Disscussion:
+##### Discussion:
 `Effect of training iterations:`
-There is a effect of learing rate and number of itertaion
-the model is trained.
-If you train SSD on intial leanring rate for
+There is an effect due to the choice of learning rate and the number of iterations the model is trained.
+If you train the SSD network on initial learning rate for
 many iterations then it performs is better on
 lower IoU threshold, which is done in this case.
-In orignal work using caffe implementation of SSD,
-I trained SSD with 0.0005 learning rate for first 30K
-iteration and dropped then learning rate by factor of 5
-(divided by 5) and only trained for 45k itrations.
-In this implementation all the models are trained for 120K
-iterations, intial learninig rate is 0.0005 and learing is dropped by
-the fastor of 5 after 70K and 90K iterations.
+In original work using caffe implementation of SSD,
+I trained the SSD network  with 0.0005 learning rate for first 30K
+iterations and dropped then learning rate by the factor of 5
+(divided by 5) and further trained up to 45k iterations.
+In this implementation, all the models are trained for 120K
+iterations, the initial learning rate is set to 0.0005 and learning is dropped by the factor of 5 after 70K and 90K iterations.
 
 `Kalogeiton et al. [5] ` make use mean fusion, so I thought we could try in our pipeline which was very easy to incorporate.
 It is evident from above table that mean fusion performs better than other fusion techniques.
-Also, their method rely on multiple frames as input in addition to post-processing of
-bounding box coordinates at tubelet level.
+Also, their method relies on multiple frames as input in addition to post-processing of bounding box coordinates at tubelet level.
 
 ##### Real-time aspect:
 
-This implementation is mainly focused on producing the best number, it can be modified to tun fast.
+This implementation is mainly focused on producing the best numbers (mAP) in the simplest manner, it can be modified to run faster.
 There few aspect that would need changes:
- - NMS is performed once in python then again in matlab; one has to do that on GPU in python
- - Most of the time spent during tube generations is taken by disc operations; which can be elimnated completely.
+ - NMS is performed once in python then again in Matlab; one has to do that on GPU in python
+ - Most of the time spent during tube generations is taken by disc operations; which can be eliminated completely.
  - IoU computation during action path is done multiple time just to keep the code clean that can be handled more smartly
 
-Contact me if you want to implement real-time version.
-Proper real-time version would require converting matlab part into python.
-I presented the timing of indivual components in paper, which still holds.
+Contact me if you want to implement the real-time version.
+The Proper real-time version would require converting Matlab part into python.
+I presented the timing of individual components in the paper, which still holds true.
 
 ## Extras
-To use pre-trained model download the pretrained weights from the links given below and make changes in `test-ucf24.py` to accept the downloaded weights. 
+To use pre-trained model download the pre-trained weights from the links given below and make changes in `test-ucf24.py` to accept the downloaded weights. 
 
 ##### Download pre-trained networks
 - Currently, we provide the following PyTorch models: 
@@ -303,7 +300,7 @@ To use pre-trained model download the pretrained weights from the links given be
 
 ## TODO
  - Incorporate JHMDB-21 dataset
- - Convert matlab part into python
+ - Convert matlab part into python (happy to accept PR)
 
 ## Citation
 If this work has been helpful in your research please consider citing [1] and [4]
@@ -322,5 +319,5 @@ If this work has been helpful in your research please consider citing [1] and [4
 - [4] G. Singh, S Saha, M. Sapienza, P. H. S. Torr and F Cuzzolin. Online Real time Multiple Spatiotemporal Action Localisation and Prediction. ICCV, 2017.
 - [5] Kalogeiton, V., Weinzaepfel, P., Ferrari, V. and Schmid, C., 2017. Action Tubelet Detector for Spatio-Temporal Action Localization. ICCV, 2017.
 - [Original SSD Implementation (CAFFE)](https://github.com/weiliu89/caffe/tree/ssd)
-- A huge thank to Max deGroot, Ellis Brown for Pytorch implementation of [SSD](https://github.com/amdegroot/ssd.pytorch)
+- A huge thanks to Max deGroot, Ellis Brown for Pytorch implementation of [SSD](https://github.com/amdegroot/ssd.pytorch)
  

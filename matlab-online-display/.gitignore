@@ -1,0 +1,7 @@
+*.ods#
+*.m~
+*.prototxt~
+*.xml~
+*.log
+*~
+/results
