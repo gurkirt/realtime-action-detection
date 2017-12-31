@@ -168,30 +168,30 @@ that in paper, mostly about this implemenation.
   </tr>
   <tr>
     <td align="left">This implentation[4] RGB </td> 
-    <td>71.71</td>
-    <td>39.36</td>
-    <td>14.57</td> 
-    <td>17.95</td>
-    <td>64.12</td>
-    <td>88.68</td>  
+    <td>72.08</td>
+    <td>40.59</td>
+    <td>14.06</td>
+    <td>18.48</td>
+    <td>64.--</td>
+    <td>89.78</td>
   </tr>
   <tr>
     <td align="left">This implentation[4] FastFLOW </td> 
-    <td>73.50</td>
-    <td>67.63</td>
-    <td>03.57</td> 
-    <td>11.56</td>
-    <td>46.33</td>
-    <td>85.60</td>  
+    <td>46.32</td>
+    <td>15.86</td>
+    <td>00.20</td>
+    <td>03.66</td>
+    <td>21.--</td>
+    <td>73.08</td>
   </tr>
   <tr>
     <td align="left">This implentation[4] BroxFLOW </td> 
-    <td>44.62</td>
-    <td>14.43</td>
-    <td>00.12</td> 
-    <td>03.42</td>
-    <td>21.94</td>
-    <td>70.55</td>  
+    <td>68.33</td>
+    <td>31.80</td>
+    <td>02.83</td>
+    <td>11.42</td>
+    <td>46.--</td>
+    <td>85.49</td>
   </tr>
   <tr>
     <td align="left">This implentation[4] RGB+FastFLOW (boost-fusion) </td> 

@@ -9,10 +9,9 @@
 
 function I01onlineTubes()
 
-data_root = '/mnt/sun-gamma/datasets';
-save_root = '/mnt/sun-gamma/datasets';
-iteration_num_rgb = [50000, 60000, 70000, 80000, 100000, 120000]; % you can also evaluate on multiple iterations
-iteration_num_flow =[50000, 70000, 90000, 100000, 120000]; % you can also evaluate on multiple iterations
+data_root = '/mnt/mars-fast/datasets';
+save_root = '/mnt/mars-gamma/datasets';
+iteration_nums = [120000]; % you can also evaluate on multiple iterations
 
 % add subfolder to matlab paths
 addpath(genpath('gentube/'));
@@ -22,17 +21,16 @@ addpath(genpath('utils/'));
 model_type = 'CONV';
 
 completeList = {...
-    {'ucf24','01',{'rgb'},iteration_num_rgb,{'score'}},...
-    {'ucf24','01',{'brox'},iteration_num_flow,{'score'}}...
-    {'ucf24','01',{'fastOF'},iteration_num_flow,{'score'}}...
+    {'ucf24','01', {'rgb'}, iteration_nums,{'score'}},...
+    {'ucf24','01', {'brox'}, iteration_nums,{'score'}}...
+    {'ucf24','01', {'fastOF'}, iteration_nums,{'score'}}...
     };
-
 
 alldopts = cell(2,1);
 count = 1;
 gap=3;
 
-for setind = 1:2 %:length(completeList)
+for setind = 1:length(completeList)
     [dataset, listid, imtypes, iteration_nums, costTypes] = enumurateList(completeList{setind});
     for ct = 1:length(costTypes)
         costtype = costTypes{ct};
@@ -67,7 +65,8 @@ for index = 1:count-1
         results{index,1} = result_cell;
         results{index,2} = opts;
         rm = result_cell{1};
-        fprintf('\nmAP@0.2:%0.4f mAP@0.5:%0.4f mAP@0.75:%0.4f AVGmAP:%0.4f clsAcc:%0.4f\n',...
+        rm = rm(rm(:,2) == 5,:);
+        fprintf('\nmAP@0.2:%0.4f mAP@0.5:%0.4f mAP@0.75:%0.4f AVGmAP:%0.4f clsAcc:%0.4f\n\n',...
                     rm(1,5),rm(2,5),rm(7,5),mean(rm(2:end,5)),rm(1,6));
     end
 end
@@ -100,7 +99,7 @@ if ~exist(saveName,'file')
     annot = annot.annot;
     testvideos = getVideoNames(dopts.vidList);
     actionpaths = readALLactionPaths(dopts.vidList,dopts.actPathDir,1);
-    for  alpha = [1, 3, 5, 6, 8, 10]
+    for  alpha = [3, 5]
         fprintf('alpha %03d ',alpha);
         tubesSaveName = sprintf('%stubes-alpha%04d.mat',dopts.tubeDir,uint16(alpha*100));
         if ~exist(tubesSaveName,'file')
@@ -126,7 +125,9 @@ if ~exist(saveName,'file')
         end
         fprintf('\n');
     end
-    
+
+
+
     results(counter:end,:) = [];
     result = cell(2,1);
     result{2} = class_aps;

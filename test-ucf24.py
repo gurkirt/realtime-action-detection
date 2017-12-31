@@ -36,10 +36,10 @@ parser.add_argument('--jaccard_threshold', default=0.5, type=float, help='Min Ja
 parser.add_argument('--batch_size', default=32, type=int, help='Batch size for training')
 parser.add_argument('--resume', default=None, type=str, help='Resume from checkpoint')
 parser.add_argument('--num_workers', default=0, type=int, help='Number of workers used in dataloading')
-parser.add_argument('--eval_iter', default='150000', type=str, help='Number of training iterations')
+parser.add_argument('--eval_iter', default='50000,70000,90000,120000,150000', type=str, help='Number of training iterations')
 parser.add_argument('--cuda', default=True, type=str2bool, help='Use cuda to train model')
 parser.add_argument('--ngpu', default=1, type=str2bool, help='Use cuda to train model')
-parser.add_argument('--lr', '--learning-rate', default=0.001, type=float, help='initial learning rate')
+parser.add_argument('--lr', '--learning-rate', default=0.00099, type=float, help='initial learning rate')
 parser.add_argument('--visdom', default=False, type=str2bool, help='Use visdom to for loss visualization')
 parser.add_argument('--data_root', default='/mnt/mars-fast/datasets/', help='Location of VOC root directory')
 parser.add_argument('--save_root', default='/mnt/mars-gamma/datasets/', help='Location to save checkpoint models')
@@ -185,7 +185,7 @@ def main():
 
     args.save_root += args.dataset+'/'
     args.data_root += args.dataset+'/'
-    args.listid = '001' ## would be usefull in JHMDB-21
+    args.listid = '099' ## would be usefull in JHMDB-21
     print('Exp name', exp_name, args.listid)
     for iteration in [int(itr) for itr in args.eval_iter.split(',')]:
         log_file = open(args.save_root + 'cache/' + exp_name + "/testing-{:d}.log".format(iteration), "w", 1)

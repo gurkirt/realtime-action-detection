@@ -49,7 +49,7 @@ parser.add_argument('--cuda', default=True, type=str2bool, help='Use cuda to tra
 parser.add_argument('--ngpu', default=1, type=str2bool, help='Use cuda to train model')
 parser.add_argument('--lr', '--learning-rate', default=1e-3, type=float, help='initial learning rate')
 parser.add_argument('--momentum', default=0.9, type=float, help='momentum')
-parser.add_argument('--stepvalues', default='30000,60000,100000', type=str, help='iter numbers where learing rate to be dropped')
+parser.add_argument('--stepvalues', default='40000,60000,100000', type=str, help='iter numbers where learing rate to be dropped')
 parser.add_argument('--weight_decay', default=5e-4, type=float, help='Weight decay for SGD')
 parser.add_argument('--gamma', default=0.1, type=float, help='Gamma update for SGD')
 parser.add_argument('--visdom', default=False, type=str2bool, help='Use visdom to for loss visualization')
@@ -131,7 +131,7 @@ def main():
 
     #Set different learning rate to bias layers and set their weight_decay to 0
     for name, param in parameter_dict.items():
-        if name.find('bias') > -1:
+        if name.find('bbbbbbbias') > -1:
             print(name, 'layer parameters will be trained @ {}'.format(args.lr*2))
             params += [{'params': [param], 'lr': args.lr*2, 'weight_decay': 0}]
         else:

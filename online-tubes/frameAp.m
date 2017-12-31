@@ -18,7 +18,7 @@ addpath(genpath('eval/'));
 addpath(genpath('utils/'));
 addpath(genpath('actionpath/'));
 data_root = '/mnt/mars-fast/datasets';
-save_root = '/mnt/mars-fast/ssd-work';
+save_root = '/mnt/mars-gamma/datasets';
 iou_th = 0.5;
 model_type = 'CONV';
 dataset = 'ucf24';
