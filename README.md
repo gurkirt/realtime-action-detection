@@ -18,6 +18,7 @@ accommodate ucf24 dataset.
 - <a href='#training-ssd'>Training SSD</a>
 - <a href='#building-tubes'>Building Tubes</a>
 - <a href='#performance'>Performance</a>
+- <a href='#online-code'>Online-Code</a>
 - <a href='#extras'>Extras</a>
 - <a href='#todo'>TODO</a>
 - <a href='#citation'>Citation</a>
@@ -27,7 +28,7 @@ accommodate ucf24 dataset.
 - Install [PyTorch](http://pytorch.org/)(version v0.2, you try v0.03 but that would require few fixes) by selecting your environment on the website and running the appropriate command.
 - Please install cv2 as well. I recommend using anaconda 3.6 and it's opnecv package.
 - You will also need Matlab. If you have distributed computing license then it would be faster otherwise it should also be fine. 
-Just replace <code>parfor</code> with simple `for` in Matlab scripts. I would be happy to accept a PR for python version of this part.
+Just replace `parfor` with simple `for` in Matlab scripts. I would be happy to accept a PR for python version of this part.
 - Clone this repository. 
   * Note: We currently only support Python 3+ with Pytorch version v0.2 on Linux system.
 - We currently only support [UCF24](http://www.thumos.info/download.html) with [revised annotaions](https://github.com/gurkirt/corrected-UCF101-Annots) released with our paper, we will try to add [JHMDB21](http://jhmdb.is.tue.mpg.de/) as soon as possible, but can't promise, you can check out our [BMVC2016 code](https://bitbucket.org/sahasuman/bmvc2016_code) to get started your experiments on JHMDB21.
@@ -172,7 +173,7 @@ that in the paper, mostly about this implementation.
     <td>40.59</td>
     <td>14.06</td>
     <td>18.48</td>
-    <td>64.--</td>
+    <td>64.96</td>
     <td>89.78</td>
   </tr>
   <tr>
@@ -181,7 +182,7 @@ that in the paper, mostly about this implementation.
     <td>15.86</td>
     <td>00.20</td>
     <td>03.66</td>
-    <td>21.--</td>
+    <td>22.91</td>
     <td>73.08</td>
   </tr>
   <tr>
@@ -190,62 +191,62 @@ that in the paper, mostly about this implementation.
     <td>31.80</td>
     <td>02.83</td>
     <td>11.42</td>
-    <td>46.--</td>
+    <td>47.26</td>
     <td>85.49</td>
   </tr>
   <tr>
     <td align="left">This implentation[4] RGB+FastFLOW (boost-fusion) </td> 
-    <td>70.61</td>
-    <td>40.18</td>
-    <td>11.42</td>
-    <td>17.03</td>
-    <td>64.40</td>
-    <td>89.01</td>
+    <td>71.38</td>
+    <td>39.95</td>
+    <td>11.36</td>
+    <td>17.47</td>
+    <td>65.66</td>
+    <td>89.78</td>
   </tr>
   <tr>
     <td align="left">This implentation[4] RGB+FastFLOW (union-set) </td> 
-    <td>72.80</td>
-    <td>43.23</td>
-    <td>13.14</td>
-    <td>18.51</td>
-    <td>60.70</td>
-    <td>89.89</td>
+    <td>73.68</td>
+    <td>42.08</td>
+    <td>12.45</td>
+    <td>18.40</td>
+    <td>61.82</td>
+    <td>90.55</td>
   </tr>
   <tr>
     <td align="left">This implentation[4] RGB+FastFLOW(mean fusion) </td> 
-    <td>74.34</td>
-    <td>44.27</td>
-    <td>13.50</td>
-    <td>18.96</td>
-    <td>60.70</td>
+    <td>75.48</td>
+    <td>43.19</td>
+    <td>13.05</td>
+    <td>18.87</td>
+    <td>64.35</td>
     <td>91.54</td>
   </tr>
   <tr>
     <td align="left">This implentation[4] RGB+BroxFLOW (boost-fusion) </td> 
-    <td>73.58</td>
-    <td>43.76</td>
-    <td>12.60</td>
-    <td>18.60</td>
-    <td>67.60</td>
-    <td>91.10</td>
+    <td>73.34</td>
+    <td>42.47</td>
+    <td>12.23</td>
+    <td>18.67</td>
+    <td>68.31</td>
+    <td>90.88</td>
   </tr>
   <tr>
     <td align="left">This implentation[4] RGB+BroxFLOW (union-set) </td> 
-    <td>74.88</td>
-    <td>45.14</td>
-    <td>13.93</td>
-    <td>19.73</td>
-    <td>64.36</td>
-    <td>92.64</td>
+    <td>75.01</td>
+    <td>44.98</td>
+    <td>13.89</td>
+    <td>19.76</td>
+    <td>64.97</td>
+    <td>90.77</td>
   </tr>
   <tr>
     <td align="left">This implentation[4] RGB+BroxFLOW(mean fusion) </td> 
-    <td>76.91</td>
-    <td>47.56</td>
-    <td>15.14</td>
-    <td>20.66</td>
-    <td>67.01</td>
-    <td>93.08</td>
+    <td>76.43</td>
+    <td>45.18</td>
+    <td>14.39</td>
+    <td>20.08</td>
+    <td>67.81</td>
+    <td>92.20</td>
   </tr>
   <tr>
     <td align="left">Kalogeiton et al. [5] RGB+BroxFLOW (stack of flow images)(mean fusion) </td>
@@ -286,6 +287,13 @@ There few aspect that would need changes:
 Contact me if you want to implement the real-time version.
 The Proper real-time version would require converting Matlab part into python.
 I presented the timing of individual components in the paper, which still holds true.
+
+## Online-Code
+Thanks to [Zhujiagang](https://github.com/zhujiagang), a matlab version of
+online demo video creation code is available under `matlab-online-display` directory.
+
+Also, [Feynman27](https://github.com/Feynman27) pushed a python version of the incremental_linking
+to his fork of this repo at: https://github.com/Feynman27/realtime-action-detection
 
 ## Extras
 To use pre-trained model download the pre-trained weights from the links given below and make changes in `test-ucf24.py` to accept the downloaded weights. 

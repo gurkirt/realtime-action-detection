@@ -10,8 +10,8 @@ addpath(genpath('eval/'));
 addpath(genpath('utils/'));
 
 completeList = {...
-    {'ucf24','01',{'rgb','brox'},[120000,120000],{'cat','nwsum-plus','mean'}, 0.25},...
-    {'ucf24','01',{'rgb','fastOF'},[120000,120000],{'cat','nwsum-plus','mean'}, 0.25},...
+    {'ucf24','01',{'rgb','brox'},[120000,120000],{'nwsum-plus','cat','mean'}, 0.25},...
+    {'ucf24','01',{'rgb','fastOF'},[120000,120000],{'nwsum-plus','cat','mean'}, 0.25},...
     };
 
 model_type = 'CONV';
@@ -20,7 +20,7 @@ iouthresh = 0.1;
 gap = 3;
 alldopts = cell(2,1);
 count = 0;
-for setind = [2,4] %1:length(completeList)
+for setind = 1:length(completeList)
     [dataset,listid,imtypes,iteration_nums,fusiontypes,fuseiouths] = enumurateList(completeList{setind});
     for ff =1:length(fusiontypes)
         fusiontype = fusiontypes{ff};
