@@ -9,9 +9,9 @@
 
 function I01onlineTubes()
 
-data_root = '/mnt/mars-fast/datasets';
-save_root = '/mnt/mars-gamma/datasets';
-iteration_nums = [120000]; % you can also evaluate on multiple iterations
+data_root = '/mnt/sun-gamma/datasets';
+save_root = '/mnt/sun-gamma/datasets';
+iteration_nums = [70000,120000,50000,90000]; % you can also evaluate on multiple iterations
 
 % add subfolder to matlab paths
 addpath(genpath('gentube/'));
@@ -30,7 +30,7 @@ alldopts = cell(2,1);
 count = 1;
 gap=3;
 
-for setind = 1:length(completeList)
+for setind = 1 %:length(completeList)
     [dataset, listid, imtypes, iteration_nums, costTypes] = enumurateList(completeList{setind});
     for ct = 1:length(costTypes)
         costtype = costTypes{ct};

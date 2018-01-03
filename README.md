@@ -62,7 +62,7 @@ Let's assume that you extracted dataset in `/home/user/ucf24/` directory then yo
 
 ```Shell
 CUDA_VISIBLE_DEVICES=0 python3 train-ucf24.py --data_root=/home/user/ucf24/ --save_root=/home/user/ucf24/ 
---visdom=True --input_type=rgb --stepvalues=70000,90000 --max_iter=120000
+--visdom=True --input_type=rgb --stepvalues=30000,60000,90000 --max_iter=120000
 ```
 
 To train of flow inputs
