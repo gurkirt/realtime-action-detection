@@ -185,7 +185,7 @@ def main():
 
     args.save_root += args.dataset+'/'
     args.data_root += args.dataset+'/'
-    args.listid = '099' ## would be usefull in JHMDB-21
+    args.listid = '01' ## would be usefull in JHMDB-21
     print('Exp name', exp_name, args.listid)
     for iteration in [int(itr) for itr in args.eval_iter.split(',')]:
         log_file = open(args.save_root + 'cache/' + exp_name + "/testing-{:d}.log".format(iteration), "w", 1)
