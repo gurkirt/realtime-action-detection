@@ -42,7 +42,7 @@ end
 opts.imgDir = sprintf('%s/%s/%s-images/',data_root,dataset,imgType);
 
 opts.detDir = sprintf('%s/%s/detections/%s-%s-%s-%06d/',baseDir,dataset,model_type,imgType,listid,iteration_num);
-opts.annotFile = sprintf('%s/%s/splitfiles/annots.mat',data_root,dataset);
+opts.annotFile = sprintf('%s/%s/splitfiles/finalAnnots.ma.mat',data_root,dataset);
 
 opts.actPathDir = sprintf('%s/%s/actionPaths/%s-%s-%s-%06d-%s-%d-%04d/',baseDir,dataset,model_type,imgType,listid,iteration_num,costtype,gap,iouthresh*100);
 opts.tubeDir = sprintf('%s/%s/actionTubes/%s-%s-%s-%06d-%s-%d-%04d/',baseDir,dataset,model_type,imgType,listid,iteration_num,costtype,gap,iouthresh*100);
