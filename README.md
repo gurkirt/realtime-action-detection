@@ -25,7 +25,7 @@ accommodate ucf24 dataset.
 - <a href='#references'>Reference</a>
 
 ## Installation
-- Install [PyTorch](http://pytorch.org/)(version v0.2, you try v0.03 but that would require few fixes) by selecting your environment on the website and running the appropriate command.
+- Install [PyTorch](http://pytorch.org/)(version v0.3) by selecting your environment on the website and running the appropriate command.
 - Please install cv2 as well. I recommend using anaconda 3.6 and it's opnecv package.
 - You will also need Matlab. If you have distributed computing license then it would be faster otherwise it should also be fine. 
 Just replace `parfor` with simple `for` in Matlab scripts. I would be happy to accept a PR for python version of this part.
