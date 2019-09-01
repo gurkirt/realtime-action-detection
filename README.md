@@ -1,4 +1,7 @@
 # Real-time online Action Detection: ROAD
+
+
+
 An implementation of our work ([Online Real-time Multiple Spatiotemporal Action Localisation and Prediction](https://arxiv.org/pdf/1611.08563.pdf)) published in ICCV 2017.
 
 Originally, we used [Caffe](https://github.com/weiliu89/caffe/tree/ssd) implementation of [SSD-V2](https://arxiv.org/abs/1512.02325)
@@ -11,6 +14,10 @@ because it would be easier to reuse than caffe version (where installation itsel
 We build on Pytorch [implementation](https://github.com/amdegroot/ssd.pytorch) of SSD by Max deGroot, Ellis Brown.
 We made few changes like (different learning rate for bias and weights during optimization) and simplified some parts to 
 accommodate ucf24 dataset. 
+
+## UPDATE yo PYTORCH 1.2
+The previous version was in pytorch 0.2. The current one works on pytorch 1.2. 
+Not everything is verified with current except single stream rgb training and testing, but everything should work alright. Here is the [link](https://github.com/gurkirt/realtime-action-detection/tree/c485c9016e6bb4c21798c03adfdfc09e3e67553b) to the previous version.
 
 ### Table of Contents
 - <a href='#installation'>Installation</a>

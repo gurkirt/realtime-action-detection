@@ -38,9 +38,10 @@ class SSD(nn.Module):
         self.num_classes = num_classes
         # TODO: implement __call__ in PriorBox
         self.priorbox = PriorBox(v2)
-        self.priors = Variable(self.priorbox.forward(), volatile=True).cuda()
-        self.num_priors = self.priors.size(0)
-        self.size = 300
+        with torch.no_grad():
+            self.priors = self.priorbox.forward().cuda()
+            self.num_priors = self.priors.size(0)
+            self.size = 300
 
         # SSD network
         self.vgg = nn.ModuleList(base)
@@ -51,7 +52,7 @@ class SSD(nn.Module):
         self.loc = nn.ModuleList(head[0])
         self.conf = nn.ModuleList(head[1])
 
-        self.softmax = nn.Softmax().cuda()
+        self.softmax = nn.Softmax(dim=1).cuda()
         # self.detect = Detect(num_classes, 0, 200, 0.001, 0.45)
 
     def forward(self, x):

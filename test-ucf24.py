@@ -81,92 +81,93 @@ def test_net(net, save_root, exp_name, input_type, dataset, iteration, num_class
     print('Number of images ', len(dataset),' number of batchs', num_batches)
     frame_save_dir = save_root+'detections/CONV-'+input_type+'-'+args.listid+'-'+str(iteration).zfill(6)+'/'
     print('\n\n\nDetections will be store in ',frame_save_dir,'\n\n')
-    for val_itr in range(len(val_data_loader)):
-        if not batch_iterator:
-            batch_iterator = iter(val_data_loader)
+    with torch.no_grad():
+        for val_itr in range(len(val_data_loader)):
+            if not batch_iterator:
+                batch_iterator = iter(val_data_loader)
 
-        torch.cuda.synchronize()
-        t1 = time.perf_counter()
-
-        images, targets, img_indexs = next(batch_iterator)
-        batch_size = images.size(0)
-        height, width = images.size(2), images.size(3)
-
-        if args.cuda:
-            images = Variable(images.cuda(), volatile=True)
-        output = net(images)
-
-        loc_data = output[0]
-        conf_preds = output[1]
-        prior_data = output[2]
-
-        if print_time and val_itr%val_step == 0:
             torch.cuda.synchronize()
-            tf = time.perf_counter()
-            print('Forward Time {:0.3f}'.format(tf - t1))
-        for b in range(batch_size):
-            gt = targets[b].numpy()
-            gt[:, 0] *= width
-            gt[:, 2] *= width
-            gt[:, 1] *= height
-            gt[:, 3] *= height
-            gt_boxes.append(gt)
-            decoded_boxes = decode(loc_data[b].data, prior_data.data, cfg['variance']).clone()
-            conf_scores = net.softmax(conf_preds[b]).data.clone()
-            index = img_indexs[b]
-            annot_info = image_ids[index]
+            t1 = time.perf_counter()
 
-            frame_num = annot_info[1]; video_id = annot_info[0]; videoname = video_list[video_id]
-            output_dir = frame_save_dir+videoname
-            if not os.path.isdir(output_dir):
-                os.makedirs(output_dir)
+            images, targets, img_indexs = next(batch_iterator)
+            batch_size = images.size(0)
+            height, width = images.size(2), images.size(3)
 
-            output_file_name = output_dir+'/{:05d}.mat'.format(int(frame_num))
-            save_ids.append(output_file_name)
-            sio.savemat(output_file_name, mdict={'scores':conf_scores.cpu().numpy(),'loc':decoded_boxes.cpu().numpy()})
+            if args.cuda:
+                images = images.cuda()
+            output = net(images)
 
-            for cl_ind in range(1, num_classes):
-                scores = conf_scores[:, cl_ind].squeeze()
-                c_mask = scores.gt(args.conf_thresh)  # greater than minmum threshold
-                scores = scores[c_mask].squeeze()
-                # print('scores size',scores.size())
-                if scores.dim() == 0:
-                    # print(len(''), ' dim ==0 ')
-                    det_boxes[cl_ind - 1].append(np.asarray([]))
-                    continue
-                boxes = decoded_boxes.clone()
-                l_mask = c_mask.unsqueeze(1).expand_as(boxes)
-                boxes = boxes[l_mask].view(-1, 4)
-                # idx of highest scoring and non-overlapping boxes per class
-                ids, counts = nms(boxes, scores, args.nms_thresh, args.topk)  # idsn - ids after nms
-                scores = scores[ids[:counts]].cpu().numpy()
-                boxes = boxes[ids[:counts]].cpu().numpy()
-                # print('boxes sahpe',boxes.shape)
-                boxes[:, 0] *= width
-                boxes[:, 2] *= width
-                boxes[:, 1] *= height
-                boxes[:, 3] *= height
+            loc_data = output[0]
+            conf_preds = output[1]
+            prior_data = output[2]
 
-                for ik in range(boxes.shape[0]):
-                    boxes[ik, 0] = max(0, boxes[ik, 0])
-                    boxes[ik, 2] = min(width, boxes[ik, 2])
-                    boxes[ik, 1] = max(0, boxes[ik, 1])
-                    boxes[ik, 3] = min(height, boxes[ik, 3])
+            if print_time and val_itr%val_step == 0:
+                torch.cuda.synchronize()
+                tf = time.perf_counter()
+                print('Forward Time {:0.3f}'.format(tf - t1))
+            for b in range(batch_size):
+                gt = targets[b].numpy()
+                gt[:, 0] *= width
+                gt[:, 2] *= width
+                gt[:, 1] *= height
+                gt[:, 3] *= height
+                gt_boxes.append(gt)
+                decoded_boxes = decode(loc_data[b].data, prior_data.data, cfg['variance']).clone()
+                conf_scores = net.softmax(conf_preds[b]).data.clone()
+                index = img_indexs[b]
+                annot_info = image_ids[index]
 
-                cls_dets = np.hstack((boxes, scores[:, np.newaxis])).astype(np.float32, copy=True)
-                det_boxes[cl_ind - 1].append(cls_dets)
+                frame_num = annot_info[1]; video_id = annot_info[0]; videoname = video_list[video_id]
+                output_dir = frame_save_dir+videoname
+                if not os.path.isdir(output_dir):
+                    os.makedirs(output_dir)
 
-            count += 1
-        if val_itr%val_step == 0:
-            torch.cuda.synchronize()
-            te = time.perf_counter()
-            print('im_detect: {:d}/{:d} time taken {:0.3f}'.format(count, num_images, te - ts))
-            torch.cuda.synchronize()
-            ts = time.perf_counter()
-        if print_time and val_itr%val_step == 0:
-            torch.cuda.synchronize()
-            te = time.perf_counter()
-            print('NMS stuff Time {:0.3f}'.format(te - tf))
+                output_file_name = output_dir+'/{:05d}.mat'.format(int(frame_num))
+                save_ids.append(output_file_name)
+                sio.savemat(output_file_name, mdict={'scores':conf_scores.cpu().numpy(),'loc':decoded_boxes.cpu().numpy()})
+
+                for cl_ind in range(1, num_classes):
+                    scores = conf_scores[:, cl_ind].squeeze()
+                    c_mask = scores.gt(args.conf_thresh)  # greater than minmum threshold
+                    scores = scores[c_mask].squeeze()
+                    # print('scores size',scores.size())
+                    if scores.dim() == 0:
+                        # print(len(''), ' dim ==0 ')
+                        det_boxes[cl_ind - 1].append(np.asarray([]))
+                        continue
+                    boxes = decoded_boxes.clone()
+                    l_mask = c_mask.unsqueeze(1).expand_as(boxes)
+                    boxes = boxes[l_mask].view(-1, 4)
+                    # idx of highest scoring and non-overlapping boxes per class
+                    ids, counts = nms(boxes, scores, args.nms_thresh, args.topk)  # idsn - ids after nms
+                    scores = scores[ids[:counts]].cpu().numpy()
+                    boxes = boxes[ids[:counts]].cpu().numpy()
+                    # print('boxes sahpe',boxes.shape)
+                    boxes[:, 0] *= width
+                    boxes[:, 2] *= width
+                    boxes[:, 1] *= height
+                    boxes[:, 3] *= height
+
+                    for ik in range(boxes.shape[0]):
+                        boxes[ik, 0] = max(0, boxes[ik, 0])
+                        boxes[ik, 2] = min(width, boxes[ik, 2])
+                        boxes[ik, 1] = max(0, boxes[ik, 1])
+                        boxes[ik, 3] = min(height, boxes[ik, 3])
+
+                    cls_dets = np.hstack((boxes, scores[:, np.newaxis])).astype(np.float32, copy=True)
+                    det_boxes[cl_ind - 1].append(cls_dets)
+
+                count += 1
+            if val_itr%val_step == 0:
+                torch.cuda.synchronize()
+                te = time.perf_counter()
+                print('im_detect: {:d}/{:d} time taken {:0.3f}'.format(count, num_images, te - ts))
+                torch.cuda.synchronize()
+                ts = time.perf_counter()
+            if print_time and val_itr%val_step == 0:
+                torch.cuda.synchronize()
+                te = time.perf_counter()
+                print('NMS stuff Time {:0.3f}'.format(te - tf))
     print('Evaluating detections for itration number ', iteration)
 
     #Save detection after NMS along with GT

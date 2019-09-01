@@ -126,7 +126,7 @@ def make_lists(rootpath, imgtype, split=1, fulltest=False):
                 labels = []
                 image_name = imagesDir + videoname+'/{:05d}.jpg'.format(frame_num+1)
                 #label_name = rootpath + 'labels/' + videoname + '/{:05d}.txt'.format(frame_num + 1)
-                assert os.path.isfile(image_name), 'Image does not exist'+image_name
+                # assert os.path.isfile(image_name), 'Image does not exist'+image_name
                 for tubeid, tube in enumerate(annotations):
                     label = tube['label']
                     if tube_labels[frame_num, tubeid]>0:
