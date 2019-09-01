@@ -15,7 +15,7 @@ We build on Pytorch [implementation](https://github.com/amdegroot/ssd.pytorch) o
 We made few changes like (different learning rate for bias and weights during optimization) and simplified some parts to 
 accommodate ucf24 dataset. 
 
-## UPDATE yo PYTORCH 1.2
+## Upgrade to pytorch 1.2
 The previous version was in pytorch 0.2. The current one works on pytorch 1.2. 
 Not everything is verified with current except single stream rgb training and testing, but everything should work alright. Here is the [link](https://github.com/gurkirt/realtime-action-detection/tree/c485c9016e6bb4c21798c03adfdfc09e3e67553b) to the previous version.
 
