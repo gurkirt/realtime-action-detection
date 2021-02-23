@@ -1,6 +1,7 @@
 # Real-time online Action Detection: ROAD
 
 
+**NEWS Feb 2021** I released [3D-RetineNet](https://github.com/gurkirt/3D-RetinaNet), which is purly pytorch and python code. Linking is alos implemented in python, however on actioness scores. Hope on to [3D-RetineNet repo](https://github.com/gurkirt/3D-RetinaNet), it might be more usful to this one for UCF24 dataset in some cases.
 
 An implementation of our work ([Online Real-time Multiple Spatiotemporal Action Localisation and Prediction](https://arxiv.org/pdf/1611.08563.pdf)) published in ICCV 2017.
 
